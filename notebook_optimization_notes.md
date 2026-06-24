@@ -92,8 +92,86 @@ This file documents the structural and methodological changes made to `EDA_ML.ip
   3. build the tuned LightGBM pipeline
   4. update the results table
 
+## New modeling improvements
+
+### 12. Added physically motivated proxy features from the project notes
+- Extended the feature engineering section to add new deterministic feature groups based on `Urban Air Pollution Challenge Feature and Physical Principle Notes.md`.
+- New engineered features now include:
+  - seasonal month cycles: `month_sin`, `month_cos`
+  - dispersion / accumulation proxies: `stagnation_proxy`, `low_wind_day`, `stagnant_humid_day`
+  - dryness / dust proxies: `temp_squared`, `dryness_proxy`, `dust_risk_proxy`
+  - emission proxies: `combustion_proxy`, `industrial_proxy`, `industrial_aerosol_proxy`
+  - data-quality / uncertainty proxies: `missing_weather_count`, `missing_satellite_count`, `missing_total_measurement_count`, `has_missing_satellite`, `satellite_reliability_risk`
+- Threshold-based regime flags are built from training data only and then reused for the test set.
+- Reason: this keeps the logic physically explainable while avoiding hidden heuristics or test-set peeking.
+
+### 13. Added explicit feature toggles for explainability
+- Added top-level switches for:
+  - `ENABLE_PHYSICAL_PROXY_FEATURES`
+  - `ENABLE_WEATHER_REGIME_FLAGS`
+  - `ENABLE_MISSINGNESS_PROXY_FEATURES`
+  - `ENABLE_SATELLITE_RELIABILITY_FEATURES`
+- Reason: this makes it easier to demonstrate which engineered feature groups are active and to rerun ablation experiments cleanly.
+
+### 14. Corrected tuned-model handoff after hyperparameter search
+- The tuned `HistGradientBoosting` and tuned `LightGBM` pipelines now use the actual `best_estimator_` returned by `RandomizedSearchCV`.
+- Reason: the previous notebook copied parameter values manually into later cells, which was fragile if the search space or best result changed after a rerun.
+- Effect: the final tuned-model blocks now always stay synchronized with the latest search result.
+
+### 15. Expanded the LightGBM search space around the previous optimum
+- The prior best run sat near the upper edge for several LightGBM hyperparameters.
+- The tuning block now also explores:
+  - larger `n_estimators`
+  - explicit `max_depth`
+  - explicit `min_split_gain`
+  - slightly wider leaf and sampling choices
+- Reason: when the previous best result sits on a boundary, a wider local search is a justified next step.
+
+### 16. Tightened the feature pipeline around physically explainable signals
+- The new run improved after combining several notebook changes instead of relying on one isolated tweak.
+- Most relevant changes that likely contributed to the better validation score:
+  - added physically motivated proxy features from weather and satellite variables
+  - added explicit seasonality with `month_sin` and `month_cos`
+  - added missingness and satellite-reliability features as uncertainty signals
+  - reused train-derived thresholds for regime flags so the feature logic stayed deterministic
+  - aligned tuned-model cells with `best_estimator_` so final evaluation matched the latest search result
+  - expanded the LightGBM search around the former boundary values
+- Reason: these changes make the model inputs richer without introducing target leakage or hidden test-set assumptions.
+
+## Latest validated results
+
+### 17. Current post-fix run snapshot
+- Latest values recovered from the finished notebook run:
+  - `HistGradientBoosting` baseline: `34.3040`
+  - tuned `HistGradientBoosting`: `33.6825`
+  - tuned `HistGradientBoosting` + missing indicators: `33.6056`
+  - native-missing `HistGradientBoosting`: `33.5213`
+  - `ExtraTrees`: `33.6849`
+  - `LightGBM` baseline: `33.3345`
+  - `XGBoost` baseline: `33.6688`
+  - tuned `LightGBM`: `33.0009`
+  - weighted ensemble (`Tuned LightGBM + ExtraTrees`): `32.7879`
+- Current best documented model remains the weighted ensemble, with tuned LightGBM as the best standalone model.
+
+### 18. New improved run after domain-feature expansion
+- Latest rerun values after the new feature engineering and search-space changes:
+  - `HistGradientBoosting` baseline: `33.3199`
+  - tuned `HistGradientBoosting`: `32.6555`
+  - tuned `HistGradientBoosting` + missing indicators: `32.6460`
+  - native-missing `HistGradientBoosting`: `32.6455`
+  - `ExtraTrees`: `33.4233`
+  - `LightGBM` baseline: `32.3503`
+  - `XGBoost` baseline: `32.8867`
+  - tuned `LightGBM`: `32.0079`
+  - weighted ensemble (`Tuned LightGBM + ExtraTrees`): `31.9383`
+- Improvement versus the earlier best documented run:
+  - tuned `LightGBM`: from `33.0009` to `32.0079`
+  - best ensemble: from `32.7879` to `31.9383`
+- Current best documented model is still the weighted ensemble, but now at a materially better validation score.
+
 ## What still needs rerunning
-- The notebook structure is updated, but the changed modeling sections need to be rerun to produce fresh metrics and plots.
+- The notebook has now been rerun successfully after the latest optimization pass.
+- A fresh rerun is only needed if you change feature toggles, tuning ranges, or ensemble settings again.
 - Recommended rerun order:
   1. data loading
   2. feature engineering

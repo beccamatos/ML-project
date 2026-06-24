@@ -54,3 +54,34 @@ Note:
 2. Best sklearn-only standalone model after experiments: `HistGradientBoosting with native missing handling` with RMSE `33.52`
 3. Best standalone boosted model: `Tuned LightGBM` with RMSE `33.04`
 4. Best overall documented model before refactor: `Weighted Ensemble: Tuned LightGBM + ExtraTrees` with RMSE `32.81`
+
+## Post-Optimization Run Snapshot
+
+This section captures the newer validated results after the additional feature engineering, LightGBM search expansion, and tuned-model handoff fixes.
+
+| Model | Mean RMSE |
+|---|---:|
+| HistGradientBoosting baseline | 33.32 |
+| Tuned HistGradientBoosting | 32.66 |
+| Tuned HistGradientBoosting + missingness indicators | 32.65 |
+| HistGradientBoosting with log target | 34.00 |
+| HistGradientBoosting with native missing handling | 32.65 |
+| ExtraTreesRegressor | 33.42 |
+| LightGBM baseline | 32.35 |
+| XGBoost baseline | 32.89 |
+| Tuned LightGBM | 32.01 |
+| Weighted Ensemble: Tuned LightGBM + ExtraTrees | 31.94 |
+
+## Improvement vs Earlier Best
+
+| Comparison point | Earlier RMSE | New RMSE | Improvement |
+|---|---:|---:|---:|
+| Tuned LightGBM | 33.04 | 32.01 | 1.03 |
+| Best overall ensemble | 32.81 | 31.94 | 0.87 |
+
+## Updated Summary of Best Known Progression
+
+1. Best baseline model in the new run: `LightGBM` with RMSE `32.35`
+2. Best sklearn-only standalone model in the new run: `HistGradientBoosting with native missing handling` with RMSE `32.65`
+3. Best standalone boosted model in the new run: `Tuned LightGBM` with RMSE `32.01`
+4. Best overall documented model after the latest optimization run: `Weighted Ensemble: Tuned LightGBM + ExtraTrees` with RMSE `31.94`
