@@ -7,6 +7,8 @@ numpy==1.24.3
 pandas==2.0.1
 jupyterlab-dash==0.1.0a3
 scikit-learn==1.2.2
+lightgbm==4.6.0
+xgboost==3.2.0
 statsmodels==0.13.5
 pytest==7.3.1
 nbdime==4.0.2
