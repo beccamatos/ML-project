@@ -138,9 +138,51 @@ This file documents the structural and methodological changes made to `EDA_ML.ip
   - expanded the LightGBM search around the former boundary values
 - Reason: these changes make the model inputs richer without introducing target leakage or hidden test-set assumptions.
 
+### 17. Added hardware-aware execution controls
+- Added a startup hardware block that:
+  - detects available CPU cores
+  - checks whether `nvidia-smi` is present
+  - runs a tiny LightGBM and XGBoost GPU probe before enabling GPU mode
+- GPU is only enabled for supported models if the probe fit succeeds; otherwise the notebook falls back to CPU automatically.
+- The new hardware config now controls:
+  - `CPU_TRAIN_JOBS`
+  - `SEARCH_N_JOBS`
+  - `LIGHTGBM_DEVICE_TYPE`
+  - `XGBOOST_DEVICE`
+- If GPU acceleration is available, the notebook now also expands:
+  - `LGBM_RANDOM_SEARCH_ITERATIONS`
+  - the LightGBM hyperparameter search boundary
+  - the ablation-model size
+  - the ensemble-weight search resolution
+- Reason: this allows faster model training on capable machines without making the notebook fragile on machines where GPU builds or CUDA support are unavailable.
+
+### 18. Added optional feature-group ablation
+- Added an optional analysis block controlled by:
+  - `RUN_FEATURE_GROUP_ABLATION`
+  - `ABLATION_USE_FAST_MODEL`
+- The ablation block measures what happens when whole active feature groups are removed one at a time.
+- It is off by default because it adds runtime, but it is useful when deciding whether a group should stay enabled or be excluded in later runs.
+- Reason: this is a safer way to test redundancy than manually deleting features based only on intuition.
+
+### 19. Added ensemble-diversity diagnostics
+- Added a new post-OOF analysis block that reports:
+  - prediction correlation between ensemble members
+  - per-model RMSE and prediction spread
+  - pairwise mean absolute disagreement between model predictions
+- Reason: the ensemble gains strength when strong models make different mistakes. This block helps show whether the second and third ensemble members add real diversity or just duplicate the LightGBM signal.
+
+### 20. Reused the best ensemble weights automatically
+- The final ensemble block now copies the best weights found by the current weight search instead of keeping manually fixed values.
+- Reason: this keeps the final prediction path aligned with the latest validated ensemble result after each rerun.
+
+### 21. Restored `EDA_ML.ipynb` to the stable notebook logic
+- `EDA_ML.ipynb` briefly diverged from the successfully executed `EDA_ML2.ipynb` after an experimental GPU-aware expansion of the LightGBM search and ablation logic.
+- To avoid losing the working notebook path, the divergent config/search cells were synchronized back to the stable `EDA_ML2.ipynb` logic.
+- Reason: the project needs one primary notebook that is both current and runnable, which is more valuable than keeping an unverified experimental branch inside the main file.
+
 ## Latest validated results
 
-### 17. Current post-fix run snapshot
+### 22. Current post-fix run snapshot
 - Latest values recovered from the finished notebook run:
   - `HistGradientBoosting` baseline: `34.3040`
   - tuned `HistGradientBoosting`: `33.6825`
@@ -153,7 +195,7 @@ This file documents the structural and methodological changes made to `EDA_ML.ip
   - weighted ensemble (`Tuned LightGBM + ExtraTrees`): `32.7879`
 - Current best documented model remains the weighted ensemble, with tuned LightGBM as the best standalone model.
 
-### 18. New improved run after domain-feature expansion
+### 23. New improved run after domain-feature expansion
 - Latest rerun values after the new feature engineering and search-space changes:
   - `HistGradientBoosting` baseline: `33.3199`
   - tuned `HistGradientBoosting`: `32.6555`

@@ -7,6 +7,10 @@ numpy==1.24.3
 pandas==2.0.1
 jupyterlab-dash==0.1.0a3
 scikit-learn==1.2.2
+# GPU note:
+# - xgboost uses the regular Python package; GPU is enabled via device="cuda" when the local CUDA runtime is available.
+# - lightgbm GPU support is not a separate pip extra in this project; the Python package stays the same,
+#   but GPU usage may require a LightGBM build with GPU/OpenCL support on the local machine.
 lightgbm==4.6.0
 xgboost==3.2.0
 statsmodels==0.13.5
