@@ -180,9 +180,16 @@ This file documents the structural and methodological changes made to `EDA_ML.ip
 - To avoid losing the working notebook path, the divergent config/search cells were synchronized back to the stable `EDA_ML2.ipynb` logic.
 - Reason: the project needs one primary notebook that is both current and runnable, which is more valuable than keeping an unverified experimental branch inside the main file.
 
+### 22. Fixed the broken baseline comparison chain
+- The cell that builds `results_df` before `Plot model comparison` had accidentally been stored as markdown instead of code.
+- This caused downstream errors such as:
+  - `NameError: name 'results_df' is not defined`
+- The cell was restored to a proper code cell in both `EDA_ML.ipynb` and `EDA_ML2.ipynb`.
+- Reason: several later comparison and tuning sections depend on `results_df`, so this fix restores the full baseline-to-tuning narrative.
+
 ## Latest validated results
 
-### 22. Current post-fix run snapshot
+### 23. Current post-fix run snapshot
 - Latest values recovered from the finished notebook run:
   - `HistGradientBoosting` baseline: `34.3040`
   - tuned `HistGradientBoosting`: `33.6825`
@@ -195,7 +202,7 @@ This file documents the structural and methodological changes made to `EDA_ML.ip
   - weighted ensemble (`Tuned LightGBM + ExtraTrees`): `32.7879`
 - Current best documented model remains the weighted ensemble, with tuned LightGBM as the best standalone model.
 
-### 23. New improved run after domain-feature expansion
+### 24. New improved run after domain-feature expansion
 - Latest rerun values after the new feature engineering and search-space changes:
   - `HistGradientBoosting` baseline: `33.3199`
   - tuned `HistGradientBoosting`: `32.6555`
@@ -210,6 +217,102 @@ This file documents the structural and methodological changes made to `EDA_ML.ip
   - tuned `LightGBM`: from `33.0009` to `32.0079`
   - best ensemble: from `32.7879` to `31.9383`
 - Current best documented model is still the weighted ensemble, but now at a materially better validation score.
+
+## Notebook roles for GitHub snapshot
+
+### 25. Current recommended file roles
+- `EDA_ML.ipynb`
+  - primary notebook
+  - current runnable main workflow
+  - current best documented result: ensemble RMSE `31.9383`
+- `EDA_ML2.ipynb`
+  - backup / parallel saved run state
+  - kept because it helped recover the working notebook logic
+- `EDA_ML_4.ipynb`
+  - exploratory template notebook
+  - useful for extended `Date` / `Place_ID` analysis ideas
+  - not the current best-performing modeling notebook
+
+### 26. EDA_ML_4 comparison
+- `EDA_ML_4.ipynb` adds useful exploratory views around:
+  - date coverage
+  - daily target behavior
+  - per-location target behavior
+  - train/test overlap by location
+- However, its saved modeling path is older and does not include the later physical proxy features, expanded missingness logic, or the stronger optimized main workflow.
+- Result comparison:
+  - `EDA_ML_4.ipynb` best ensemble: `32.8137`
+  - `EDA_ML.ipynb` best ensemble: `31.9383`
+- Conclusion: `EDA_ML_4.ipynb` is valuable as a reference notebook for future feature ideas, especially location-profile or time-regime engineering, but it should not replace the current main notebook.
+
+## Next sharpening tools
+
+### 27. Added residual and prediction-behavior analysis
+- Added a new post-ensemble analysis block based on out-of-fold ensemble predictions.
+- The block now reports:
+  - global residual summary
+  - error by target quantile bin
+  - highest-error locations with enough observations
+  - monthly error summary
+  - weekday error summary
+  - actual-vs-prediction scatter plot
+  - residual distribution plot
+- Reason: this helps identify whether the model mainly struggles with high-pollution days, specific locations, or recurring time regimes before changing the feature set again.
+
+### 28. Prepared optional location-profile features for the next soft run
+- Added an optional feature block controlled by `ENABLE_LOCATION_PROFILE_FEATURES`.
+- The block creates non-target environmental profiles per `Place_ID`, using only available predictors such as:
+  - weather summaries
+  - aerosol / gas summaries
+  - cloud summaries
+  - missingness summaries
+- Each profile currently contributes per-location `mean` and `std` features and is computed separately inside train and test.
+- Reason: the residual analysis showed strong location-regime errors, while raw `Place_ID` itself is not usable because train and test locations do not overlap.
+- This block is prepared for the next soft run and is off by default until we test whether it improves generalization.
+
+### 29. Submission export flow is now challenge-ready
+- The main notebooks already trained the final ensemble on the full training set and predicted the real challenge test set.
+- The submission section now explicitly includes:
+  - final prediction on test data
+  - `submission.csv` export
+  - shape check
+  - validation that there are no missing predictions
+  - validation that predictions remain non-negative
+- Reason: this makes the notebook ready for direct submission after a successful run, without needing a manual export script.
+
+### 30. Latest quick run materially improved the validated score
+- Latest saved values from `EDA_ML.ipynb`:
+  - `HistGradientBoosting` baseline: `30.2693`
+  - tuned `HistGradientBoosting`: `30.2716`
+  - tuned `HistGradientBoosting` + missing indicators: `30.1744`
+  - native-missing `HistGradientBoosting`: `30.3037`
+  - `ExtraTrees`: `29.5877`
+  - `LightGBM` baseline: `30.1179`
+  - tuned `LightGBM`: `29.6622`
+  - weighted ensemble (`Tuned LightGBM + ExtraTrees`): `29.0485`
+- Relative to the previous best documented main-notebook result:
+  - tuned `LightGBM`: improved from `32.0079` to `29.6622`
+  - best ensemble: improved from `31.9383` to `29.0485`
+- Reason: the later feature refinements and ensemble combination now produce a materially stronger validation result than the earlier notebook state.
+
+### 31. Current ensemble winner is effectively a two-model combination
+- The best weight search result is currently:
+  - `Tuned LightGBM`: `0.5`
+  - `Native HGB`: `0.0`
+  - `ExtraTrees`: `0.5`
+- Practical interpretation:
+  - the final validated ensemble gain currently comes from combining `Tuned LightGBM` and `ExtraTrees`
+  - the native-missing `HistGradientBoosting` path still performs well on its own, but it did not add enough diversity in this run to earn non-zero ensemble weight
+- Reason: keeping this explicitly documented makes the current ensemble behavior easier to explain and defend.
+
+### 32. Latest submission export validated cleanly
+- The latest saved submission checks show:
+  - `submission.shape = (16136, 2)`
+  - `test.shape = (16136, 78)`
+  - `Missing predictions = 0`
+  - `Minimum prediction = 12.273767408495122`
+  - `Maximum prediction = 287.1783477807943`
+- Reason: this confirms that the latest export is structurally valid and ready for challenge upload without manual repair.
 
 ## What still needs rerunning
 - The notebook has now been rerun successfully after the latest optimization pass.

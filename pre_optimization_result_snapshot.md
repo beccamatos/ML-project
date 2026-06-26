@@ -85,3 +85,70 @@ This section captures the newer validated results after the additional feature e
 2. Best sklearn-only standalone model in the new run: `HistGradientBoosting with native missing handling` with RMSE `32.65`
 3. Best standalone boosted model in the new run: `Tuned LightGBM` with RMSE `32.01`
 4. Best overall documented model after the latest optimization run: `Weighted Ensemble: Tuned LightGBM + ExtraTrees` with RMSE `31.94`
+
+## Latest Quick-Run Snapshot
+
+This section captures the newest saved run in `EDA_ML.ipynb` after the additional location-profile and ensemble refinements.
+
+| Model | Mean RMSE |
+|---|---:|
+| Dummy Regressor | 46.83 |
+| Ridge Regression | 35.56 |
+| Random Forest | 32.54 |
+| HistGradientBoosting baseline | 30.27 |
+| Tuned HistGradientBoosting | 30.27 |
+| Tuned HistGradientBoosting + missingness indicators | 30.17 |
+| HistGradientBoosting with native missing handling | 30.30 |
+| HistGradientBoosting with log target | 31.20 |
+| ExtraTreesRegressor | 29.59 |
+| LightGBM baseline | 30.12 |
+| Tuned LightGBM | 29.66 |
+| Weighted Ensemble: Tuned LightGBM + ExtraTrees | 29.05 |
+
+## Latest Submission Validation
+
+| Check | Value |
+|---|---:|
+| Submission rows | 16136 |
+| Missing predictions | 0 |
+| Minimum prediction | 12.2738 |
+| Maximum prediction | 287.1783 |
+
+## Improvement vs Previous Best
+
+| Comparison point | Previous RMSE | Latest RMSE | Improvement |
+|---|---:|---:|---:|
+| Tuned LightGBM | 32.01 | 29.66 | 2.35 |
+| Best overall ensemble | 31.94 | 29.05 | 2.89 |
+
+## Latest Best Known Progression
+
+1. Best baseline model in the latest run: `HistGradientBoosting` with RMSE `30.27`
+2. Best standalone tree ensemble in the latest run: `ExtraTreesRegressor` with RMSE `29.59`
+3. Best standalone boosted model in the latest run: `Tuned LightGBM` with RMSE `29.66`
+4. Best overall documented model in the latest run: `Weighted Ensemble: Tuned LightGBM + ExtraTrees` with RMSE `29.05`
+
+## EDA_ML_4 Reference Snapshot
+
+This section documents the separately saved exploratory notebook `EDA_ML_4.ipynb`. It should be treated as a reference/template notebook, not as the current best modeling path.
+
+| Model | Mean RMSE |
+|---|---:|
+| HistGradientBoosting baseline | 34.30 |
+| Tuned HistGradientBoosting | 33.68 |
+| Tuned HistGradientBoosting + missingness indicators | 33.61 |
+| HistGradientBoosting with log target | 35.07 |
+| HistGradientBoosting with native missing handling | 33.52 |
+| ExtraTreesRegressor | 33.68 |
+| LightGBM baseline | 33.34 |
+| XGBoost baseline | 33.72 |
+| Tuned LightGBM | 33.04 |
+| Weighted Ensemble: Tuned LightGBM + ExtraTrees | 32.81 |
+
+## EDA_ML_4 Interpretation
+
+- `EDA_ML_4.ipynb` contains richer exploratory analysis for `Date` and `Place_ID`.
+- Its saved model results are interesting, but they are not stronger than the current main notebook.
+- Best documented result in `EDA_ML_4.ipynb`: ensemble RMSE `32.81`
+- Best documented result in current `EDA_ML.ipynb`: ensemble RMSE `31.94`
+- Practical conclusion: `EDA_ML_4.ipynb` is useful as an idea/template source, but not as the current best model snapshot.
