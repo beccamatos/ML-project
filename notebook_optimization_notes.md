@@ -314,6 +314,21 @@ This file documents the structural and methodological changes made to `EDA_ML.ip
   - `Maximum prediction = 287.1783477807943`
 - Reason: this confirms that the latest export is structurally valid and ready for challenge upload without manual repair.
 
+### 33. Endrun config was reset to a more conservative generalization path
+- The richer `EDA_ML.ipynb` feature set produced a stronger internal GroupKFold score, but the user-observed public score from `EDA_ML_4.ipynb` remained better.
+- That pattern is a classic signal that the richer notebook may be overfitting the validation structure, even if the internal CV score looks excellent.
+- The main config in `EDA_ML.ipynb` is therefore now set to a simpler endrun profile:
+  - `FAST_MODE = False`
+  - `USE_FULL_FEATURE_SET_FOR_NATIVE_MISSING_MODELS = False`
+  - `ENABLE_PHYSICAL_PROXY_FEATURES = False`
+  - `ENABLE_WEATHER_REGIME_FLAGS = False`
+  - `ENABLE_MISSINGNESS_PROXY_FEATURES = False`
+  - `ENABLE_SATELLITE_RELIABILITY_FEATURES = False`
+  - `ENABLE_QUALITY_FEATURES = False`
+  - `ENABLE_LOCATION_PROFILE_FEATURES = False`
+  - core raw groups stay enabled: weather, date, pollutant, cloud
+- Reason: this keeps the stronger tuning and ensemble workflow from the main notebook, but moves the feature space closer to the simpler structure that appeared to generalize better on the leaderboard.
+
 ## What still needs rerunning
 - The notebook has now been rerun successfully after the latest optimization pass.
 - A fresh rerun is only needed if you change feature toggles, tuning ranges, or ensemble settings again.
